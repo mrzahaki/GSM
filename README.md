@@ -49,8 +49,6 @@ modem->PowerControl (MOD_POWER_FULL);
 tcp.contextID = MOD_DEFAULT_CONTEXT;
 tcp.context_type = MOD_PDP_CONTEXT_TYPE_IPV4;
 tcp.APN = (uint8_t *)"mtnirancell"; 
-tcp.username = (uint8_t *)"foo";  
-tcp.password = (uint8_t *)"bar";  
 socket = modem->Activate(&tcp, &pdp); //activate PDP context
 
 if(socket < 0){
