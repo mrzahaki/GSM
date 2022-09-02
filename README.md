@@ -25,6 +25,66 @@ The driver Modem provides access to the following interfaces:
 The Modem interface usually requires CMSIS-RTOS features (i.e., mutex) and is often implemented with a peripheral device that is connected to the system using the SPI or UART interface.
 
 <br/>
+## Examples
+
+HTTP GET Request:
+```c
+#define MODEM_FRAME_SIZE 1000
+
+char http_response_buffer[MODEM_FRAME_SIZE];
+const char HTTP_URL[] = "http://foo.bar";
+
+int32_t status;
+int32_t socket = -1;
+
+MOD_CONTEXT_CONFIG tcp;
+MOD_PDP_CONTEXT pdp;
+
+MOD_DRIVER *modem = &MOD_DRIVER0;
+MOD_HTTP_t httpd ={0};
+
+modem->Initialize(NULL);
+modem->PowerControl (MOD_POWER_FULL);
+
+tcp.contextID = MOD_DEFAULT_CONTEXT;
+tcp.context_type = MOD_PDP_CONTEXT_TYPE_IPV4;
+tcp.APN = (uint8_t *)"mtnirancell"; 
+tcp.username = (uint8_t *)"foo";  
+tcp.password = (uint8_t *)"bar";  
+socket = modem->Activate(&tcp, &pdp); //activate PDP context
+
+if(socket < 0){
+  return -1;
+}
+else if(pdp.state == MOD_PDP_CONTEXT_ACTIVATED){
+  
+  httpd.method = MOD_HTTP_GET;
+  httpd.url = (uint8_t *)HTTP_URL;
+  httpd.response = (uint8_t *)http_response_buffer;
+  /* 
+   * 
+   * due to the limitations of the AT-Command protocol and for
+   *  stability improvements, the length of the content should 
+   * be retrieved from the header of the server response. 
+   * 
+   * for the server response without content-length,
+   * response_length used as the reference.
+   * 
+   * */
+  httpd.response_length = MODEM_FRAME_SIZE; 
+  httpd.timeout = 80;
+  httpd.resptime = 80;
+  status = modem->HTTP(socket, &httpd);
+
+  if(status > 0){
+    // do something with the http_response_buffer
+  }
+}
+```
+
+
+
+<br/>
 ## Common Driver Functions
 
 The modem driver is written to be compatible with standard CMSIS drivers, so each CMSIS API driver has the following functions:
