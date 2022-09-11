@@ -25,6 +25,7 @@ The driver Modem provides access to the following interfaces:
 The Modem interface usually requires CMSIS-RTOS features (i.e., mutex) and is often implemented with a peripheral device that is connected to the system using the SPI or UART interface.
 
 <br/>
+
 ## Examples
 
 HTTP GET Request:
@@ -79,10 +80,48 @@ else if(pdp.state == MOD_PDP_CONTEXT_ACTIVATED){
   }
 }
 ```
-
-
+# Table of Contents
+- [Modem Driver](#modem-driver)
+  - [Examples](#examples)
+- [Table of Contents](#table-of-contents)
+  - [Common Driver Functions](#common-driver-functions)
+    - [Cortex-M Processor Mode](#cortex-m-processor-mode)
+  - [Function Call Sequence](#function-call-sequence)
+    - [Start Sequence](#start-sequence)
+    - [Stop Sequence](#stop-sequence)
+    - [Access Struct:](#access-struct)
+  - [Modem Control:](#modem-control)
+	- [Typedef Documentation:](#typedef-documentation)
+	  - [MOD_SignalEvent_t:](#mod_signalevent_t)
+	- [Function Documentation:](#function-documentation)
+	  - [MOD_GetVersion](#mod_getversion)
+	  - [MOD_Initialize](#mod_initialize)
+	  - [MOD_Uninitialize](#mod_uninitialize)
+	  - [MOD_PowerControl](#mod_powercontrol)
+	  - [MOD_SignalEvent](#mod_signalevent)
+  - [Modem Management:](#modem-management)
+       - [Data Structure Documentation:](#data-structure-documentation)
+       - [Function Documentation:](#function-documentation-1)
+         - [MOD_Activate](#mod_activate)
+         - [MOD_Deactivate](#mod_deactivate)
+         - [MOD_Context](#mod_context)
+  - [HTTP Interface:](#http-interface)
+       - [Typedef Documentation:](#typedef-documentation-1)
+         - [HTTP\_ResponseCallback\_t](#http_responsecallback_t)
+         - [HTTP\_RequestCallback\_t](#http_requestcallback_t)
+       - [Data Structure Documentation:](#data-structure-documentation-1)
+         - [MOD\_HTTP\_t](#mod_http_t)
+         - [MOD\_Header\_t](#mod_header_t)
+         - [HTTP\_HeaderField](#http_headerfield)
+       - [Function Documentation:](#function-documentation-2)
+         - [MOD_HTTP_SetOption](#mod_http_setoption)
+         - [MOD_HTTP_GetOption](#mod_http_getoption)
+         - [MOD_SetURL](#mod_seturl)
+         - [HTTP_ResponseCallback](#http_responsecallback)
+         - [HTTP_RequestCallback](#http_requestcallback)
 
 <br/>
+
 ## Common Driver Functions
 
 The modem driver is written to be compatible with standard CMSIS drivers, so each CMSIS API driver has the following functions:
@@ -101,11 +140,13 @@ The modem driver is written to be compatible with standard CMSIS drivers, so eac
 - **Control:**  Several drivers provide a control function to configure communication parameters or execute miscellaneous control functions.
 
 <br/>
+
 ### Cortex-M Processor Mode
 
 The driver functions access peripherals and interrupts and are designed to execute in  **Privileged**  mode. When calling driver functions from RTOS threads, it should be ensured that these threads execute in  **Privileged**  mode.
 
 <br/>
+
 ## Function Call Sequence
 
 For normal operation of the driver, the API functions  **GetVersion** ,  **GetCapabilities** ,  **Initialize** ,  **PowerControl** ,  **Uninitialize**  are called in the following order:
@@ -117,6 +158,7 @@ For normal operation of the driver, the API functions  **GetVersion** ,  **GetCa
 The functions  **GetVersion**  and  **GetCapabilities**  can be called any time to obtain the required information from the driver. These functions return always the same information.
 
 <br/>
+
 ### Start Sequence
 
 To start working with a peripheral the functions  **Initialize**  and  **PowerControl**  need to be called in this order:
@@ -131,6 +173,7 @@ drv-\>PowerControl (MOD\_POWER\_FULL); // Power up peripheral, setup IRQ/DMA
 - **PowerControl**  (MOD\_POWER\_FULL) sets the peripheral registers including interrupt (NVIC) and optionally DMA. The function can be called multiple times; if the registers are already set it performs no operation and just returns with  **MOD\_DRIVER\_OK**.
 
 <br/>
+
 ### Stop Sequence
 
 To stop working with a peripheral the functions  **PowerControl**  and  **Uninitialize**  need to be called in this order:
@@ -153,6 +196,7 @@ The functions  **PowerControl**  and  **Uninitialize**  always execute and can b
 
 
 <br/>
+
 ### Access Struct:
 
 The Modem Driver as a semi-standard CMSIS-Driver publishes an  **Access Struct**  with the data type name **MOD\_DRIVER\_xxxx** that gives to access the driver functions. (Driver\_Modem.h)
@@ -181,21 +225,32 @@ Note: socket related methods reserved for the next releases.
 
 <br/>
 <br/>
+
 ## Modem Control:
 
 Control functions for the Modem module.
 
 <br />
+
 ##### Typedef Documentation:
 
-- ***MOD_SignalEvent_t***:
+<br/>
+
+###### MOD_SignalEvent_t:
+
   - Pointer to MOD\_SignalEvent: Signal Modem Event (description below).
   - Provides the typedef for the callback function MOD\_SignalEvent.
   - Parameter for:
     - MOD\_Initialize
 
 <br />
+
 ##### Function Documentation:
+
+<br />
+
+###### MOD_GetVersion 
+
 
 ```c
 •	MOD_DRIVER_VERSION MOD_GetVersion (void)
@@ -232,6 +287,9 @@ void get_version (void)  {
 
 ```
 <hr/>
+
+###### MOD_Initialize 
+
 
 ```c
 •	int32_t MOD_Initialize (MOD_SignalEvent_t cb_event)
@@ -272,6 +330,9 @@ void initialize_modem (void) {
 ```
 <hr/>
 
+###### MOD_Uninitialize 
+
+
 ```c
 •	int32_t  MOD_Uninitialize 	(void)  
 ```
@@ -303,6 +364,9 @@ void uninitialize_modem (void) {
 ```
 <hr/>
 
+###### MOD_PowerControl 
+
+
 ```c
 •	int32_t 	MOD_PowerControl 	(MOD_POWER_STATE	 state)
 ```
@@ -333,6 +397,8 @@ The function allows you to configure the power modes of the Modem module and the
 - **If** power state specifies an unsupported mode **,** the function returns *MOD\_DRIVER\_ERROR\_UNSUPPORTED* as status information **and** the previous power state of the peripheral is unchanged **.** Multiple calls with the same state generate no error **.**
 
 <hr/>
+
+###### MOD_SignalEvent 
 
 
 ```c
@@ -451,6 +517,12 @@ The Modem Management functions are used to configure and manage the connection t
 
 ##### Function Documentation:
 
+<br />
+<br />
+
+###### MOD_Activate 
+
+
 ```c
 •	int32_t	MOD_Activate	(	MOD_TCPIP_CONTEXT *    context,
 						MOD_PDP_CONTEXT   *    PDP)
@@ -506,6 +578,9 @@ extern MOD_DRIVER MOD_DRIVER0;
 
 <hr/>
 
+###### MOD_Deactivate 
+
+
 ```c
 •	int32_t MOD_Deactivate (int32_t socket)
 ```
@@ -530,8 +605,11 @@ The argument socket specifies a PDP socket identification number returned from a
 
 <hr />
 
+###### MOD_Context 
+
+
 ```c
-•	int32_t MOD Context (MOD_CONTEXT_CONFIG * context)
+•	int32_t MOD_Context (MOD_CONTEXT_CONFIG * context)
 ```
 
 Get/Set PDP context status/configuration.
@@ -564,25 +642,28 @@ The HTTP Interface exposes a set of API endpoints that accept parameters & paylo
  This document describes the API actions that can be used by HTTP requests, detailing their URLs, inputs and outputs.
 
 <br />
-<br />
 
 ##### Typedef Documentation:
 
-- ###### HTTP\_ResponseCallback\_t
+<br />
+
+###### HTTP\_ResponseCallback\_t
   - Pointer to HTTP\_ResponseCallback function.
   - Provides the typedef for the callback function HTTP\_ResponseCallback.
+  
 <br />
-- ###### HTTP\_RequestCallback\_t
+
+###### HTTP\_RequestCallback\_t
+
   - Pointer to HTTP\_RequestCallback  function.
   - Provides the typedef for the callback function HTTP\_RequestCallback.
 
-<br />
 <br />
 
 ##### Data Structure Documentation:
 
 
-- ###### MOD\_HTTP\_t
+###### MOD\_HTTP\_t
 
   HTTP connection configuration profile.
 
@@ -640,7 +721,7 @@ The HTTP Interface exposes a set of API endpoints that accept parameters & paylo
 
 <br />
 
-- ###### MOD\_Header\_t
+###### MOD\_Header\_t
 
   HTTP request header type.
 
@@ -657,7 +738,7 @@ The HTTP Interface exposes a set of API endpoints that accept parameters & paylo
 
 <br />
 
-- ###### HTTP\_HeaderField
+###### HTTP\_HeaderField
 
   HTTP header fields are a list of strings sent and received by both the client program and server on every HTTP request and response.
   <br />
@@ -679,6 +760,10 @@ The HTTP Interface exposes a set of API endpoints that accept parameters & paylo
 <br />
 
 ##### Function Documentation:
+
+<br/>
+
+###### MOD_HTTP_SetOption 
 
 ```c
 •	int32_t MOD_HTTP_SetOption (MOD_HTTPOption_t option, void *data)
@@ -730,6 +815,8 @@ The argument data points to a buffer containing the value of the option to be se
 <hr />
 <br />
 
+###### MOD_HTTP_GetOption 
+
 ```c
 •	int32_t MOD_HTTP_GetOption(MOD_HTTPOption_t  option, char *resp, uint16_t length)
 ```
@@ -751,6 +838,8 @@ Get HTTP options and queries the parameters from HTTP(S) server, including curre
   - *MOD\_DRIVER\_ERROR\_PARAMETER*: Parameter error
 
 <hr />
+
+###### MOD_SetURL 
 
 ```c
 •	int32_t MOD_SetURL (char * url, uint32_t length, uint32_t timeout)
@@ -806,6 +895,8 @@ HTTP client for STM32 devices that used to request data from a web server.
 
 <hr />
 
+###### HTTP_ResponseCallback 
+
 ```c 
 •	void HTTP_ResponseCallback (  uint8_t * data, 
                               	          uint32_t counter, 
@@ -828,6 +919,9 @@ This callback used to retrieve fragmented HTTP content.
 - The last piece of data is returned with a residual size of zero.
 
 <hr />
+
+###### HTTP_RequestCallback 
+
 
 ```c
 •	uint32_t HTTP_RequestCallback ( uint8_t ** data, 
