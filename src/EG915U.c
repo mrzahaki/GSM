@@ -26,12 +26,11 @@
 #include <string.h>
 #include <stdint.h>
 #include <stdlib.h>
-
 #include "EG915U.h"
 #include "EG915U_Serial.h"
-
 #include "Modem_EG915U_Os.h"
-#include "spstring.h"
+#include "Modem_Common.h"
+
 
 /* Control block */
 static AT_PARSER_HANDLE AT_Cb;
@@ -3794,7 +3793,7 @@ int32_t AT_Resp_SignalQuality (void) {
     val = GetRespArg (buf, sizeof(buf));
 		
     if (val > -1) {
-			val = StrNumToInt((char *)buf, 0);
+			val = MC_StrToInt((char *)buf);
 			if(val == 99)
 				val = -2;
     }

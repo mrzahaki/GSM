@@ -26,7 +26,6 @@
 #define EG915U_H__
 
 #include "BufList.h"
-
 #include "Modem_EG915U_Config.h"
 
 

@@ -35,7 +35,7 @@ extern "C"
 #include "modem_common.h"
 // #include "MODEM_EG915U_Config.h"
 #include "EG915U.h"
-#include "httpd.h"
+#include "Modem_HTTP.h"
 
 #define MOD_API_VERSION MOD_DRIVER_VERSION_MAJOR_MINOR(0,1)  /* API version */
 

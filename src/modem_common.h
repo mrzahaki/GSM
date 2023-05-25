@@ -69,6 +69,7 @@ typedef enum _MOD_POWER_STATE {
 } MOD_POWER_STATE;
 
 
+ long int MC_StrToInt(char * inp);
 
 
 #endif /* DRIVER_COMMON_H_ */
