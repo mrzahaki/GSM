@@ -2,6 +2,17 @@
 
 Driver API for LTE-FDD, LTE-TDD, and GPRS modules from Quectel (such as EG915, EC21, etc.) Based on the [ARM CMSIS-Driver](https://github.com/ARM-software/CMSIS-Driver), which can work on various ARM-based MCUs.
 
+This is a C library that provides an interface to communicate with a modem device using AT commands. The library supports various modem operations, such as power control, network registration, TCP/IP connection, and HTTP requests. 
+
+The GSM library:
+
+- provides callback functions to handle asynchronous events and data from the modem.
+- consists of two main components: the modem driver and the modem API. The modem driver is responsible for sending and receiving AT commands to and from the modem device using a serial interface. The modem API is responsible for providing high-level functions to perform common modem tasks, such as activating a PDP context, sending an HTTP request, or receiving an SMS message.
+- designed to be portable and easy to use. It can be integrated with any embedded system that has a serial interface and a modem device. The library can be configured using various macros and structures to suit different applications and modem models.
+- includes some examples to demonstrate how to use the library functions and features. The examples show how to perform basic modem operations, such as initializing the modem driver, powering on the modem device, sending an HTTP GET request. The tests show how to verify the functionality and performance of the library using different scenarios and parameters.
+
+The GSM library documentation provides detailed information about the library components, functions, structures, macros, and constants, It also explains how to use the library in different contexts and situations.
+
 <p align="center">
   <img width="200" src="./img/modem_interface_diagram.png" />
 </p>
@@ -291,34 +302,34 @@ void HTTP_Response_Fetch (uint8_t *data, uint32_t counter, uint32_t pending_size
     - [Stop Sequence](#stop-sequence)
     - [Access Struct:](#access-struct)
   - [Modem Control:](#modem-control)
-        - [Typedef Documentation:](#typedef-documentation)
-          - [MOD\_SignalEvent\_t:](#mod_signalevent_t)
-        - [Function Documentation:](#function-documentation)
-          - [MOD\_GetVersion](#mod_getversion)
-          - [MOD\_Initialize](#mod_initialize)
-          - [MOD\_Uninitialize](#mod_uninitialize)
-          - [MOD\_PowerControl](#mod_powercontrol)
-          - [MOD\_SignalEvent](#mod_signalevent)
+    - [Typedef Documentation:](#typedef-documentation)
+	  - [MOD\_SignalEvent\_t:](#mod_signalevent_t)
+    - [Function Documentation:](#function-documentation)
+	  - [MOD\_GetVersion](#mod_getversion)
+	  - [MOD\_Initialize](#mod_initialize)
+	  - [MOD\_Uninitialize](#mod_uninitialize)
+	  - [MOD\_PowerControl](#mod_powercontrol)
+	  - [MOD\_SignalEvent](#mod_signalevent)
   - [Modem Management:](#modem-management)
-        - [Data Structure Documentation:](#data-structure-documentation)
-        - [Function Documentation:](#function-documentation-1)
-          - [MOD\_Activate](#mod_activate)
-          - [MOD\_Deactivate](#mod_deactivate)
-          - [MOD\_Context](#mod_context)
+       - [Data Structure Documentation:](#data-structure-documentation)
+       - [Function Documentation:](#function-documentation-1)
+        - [MOD\_Activate](#mod_activate)
+        - [MOD\_Deactivate](#mod_deactivate)
+        - [MOD\_Context](#mod_context)
   - [HTTP Interface:](#http-interface)
-        - [Typedef Documentation:](#typedef-documentation-1)
-          - [HTTP\_ResponseCallback\_t](#http_responsecallback_t)
-          - [HTTP\_RequestCallback\_t](#http_requestcallback_t)
-        - [Data Structure Documentation:](#data-structure-documentation-1)
-          - [MOD\_HTTP\_t](#mod_http_t)
-          - [MOD\_Header\_t](#mod_header_t)
-          - [HTTP\_HeaderField](#http_headerfield)
-        - [Function Documentation:](#function-documentation-2)
-          - [MOD\_HTTP\_SetOption](#mod_http_setoption)
-          - [MOD\_HTTP\_GetOption](#mod_http_getoption)
-          - [MOD\_SetURL](#mod_seturl)
-          - [HTTP\_ResponseCallback](#http_responsecallback)
-          - [HTTP\_RequestCallback](#http_requestcallback)
+       - [Typedef Documentation:](#typedef-documentation-1)
+        - [HTTP\_ResponseCallback\_t](#http_responsecallback_t)
+        - [HTTP\_RequestCallback\_t](#http_requestcallback_t)
+       - [Data Structure Documentation:](#data-structure-documentation-1)
+        - [MOD\_HTTP\_t](#mod_http_t)
+        - [MOD\_Header\_t](#mod_header_t)
+        - [HTTP\_HeaderField](#http_headerfield)
+       - [Function Documentation:](#function-documentation-2)
+        - [MOD\_HTTP\_SetOption](#mod_http_setoption)
+        - [MOD\_HTTP\_GetOption](#mod_http_getoption)
+        - [MOD\_SetURL](#mod_seturl)
+        - [HTTP\_ResponseCallback](#http_responsecallback)
+        - [HTTP\_RequestCallback](#http_requestcallback)
 
 <br/>
 
