@@ -26,63 +26,263 @@ The Modem interface usually requires CMSIS-RTOS features (i.e., mutex) and is of
 
 <br/>
 
-## Examples
+## Usage
 
-HTTP GET Request:
+**HTTP GET Request**:
+
+This example shows how to send an ***HTTP GET*** request to a web server and receive the response using the modem driver. The steps are as follows:
+
+- Define the maximum size of the HTTP response buffer and declare an array to store the HTTP response.
+- Specify the HTTP URL to request and declare variables to store the status, socket and PDP context.
+- Declare a pointer to the modem driver and a struct to store the HTTP configuration.
+- Initialize the modem driver with no callback function and power on the modem driver with full power mode.
+- Set the context ID and type for TCP/IP connection and the APN for the network provider.
+- Activate the PDP context and get the socket and PDP information. Check if the activation was successful and the PDP context is activated.
+- Set the HTTP method to GET, the HTTP URL to request, the pointer to the response buffer, the maximum length of the response buffer, and the timeouts for inputting and receiving HTTP data.
+- Send the HTTP GET request and get the status code. Check if the status code is positive and do something with the http_response_buffer.
+
 ```c
+// Define the maximum size of the HTTP response buffer
 #define MODEM_FRAME_SIZE 1000
 
+// Declare a char array to store the HTTP response
 char http_response_buffer[MODEM_FRAME_SIZE];
+
+// Specify the HTTP URL to request
 const char HTTP_URL[] = "http://foo.bar";
 
+// Declare variables to store the status, socket and PDP context
 int32_t status;
 int32_t socket = -1;
-
 MOD_CONTEXT_CONFIG tcp;
 MOD_PDP_CONTEXT pdp;
 
+// Declare a pointer to the modem driver
 MOD_DRIVER *modem = &MOD_DRIVER0;
+
+// Declare a struct to store the HTTP configuration
 MOD_HTTP_t httpd ={0};
 
+// Initialize the modem driver with no callback function
 modem->Initialize(NULL);
+
+// Power on the modem driver with full power mode
 modem->PowerControl (MOD_POWER_FULL);
 
+// Set the context ID and type for TCP/IP connection
 tcp.contextID = MOD_DEFAULT_CONTEXT;
 tcp.context_type = MOD_PDP_CONTEXT_TYPE_IPV4;
-tcp.APN = (uint8_t *)"mtnirancell"; 
-socket = modem->Activate(&tcp, &pdp); //activate PDP context
 
+// Set the APN for the network provider
+tcp.APN = (uint8_t *)"mtnirancell";
+
+// Activate the PDP context and get the socket and PDP information
+socket = modem->Activate(&tcp, &pdp);
+
+// Check if the activation was successful and the PDP context is activated
 if(socket < 0){
+  // Handle the activation error
   return -1;
-}
-else if(pdp.state == MOD_PDP_CONTEXT_ACTIVATED){
-  
+} else if(pdp.state == MOD_PDP_CONTEXT_ACTIVATED){
+  // Set the HTTP method to GET
   httpd.method = MOD_HTTP_GET;
+
+  // Set the HTTP URL to request
   httpd.url = (uint8_t *)HTTP_URL;
+
+  // Set the pointer to the response buffer
   httpd.response = (uint8_t *)http_response_buffer;
+
   /* 
+   * Due to the limitations of the AT-Command protocol and for 
+   * stability improvements, the length of the content should 
+   * be retrieved from the header of the server response.
    * 
-   * due to the limitations of the AT-Command protocol and for
-   *  stability improvements, the length of the content should 
-   * be retrieved from the header of the server response. 
+   * For the server response without content-length, 
+   * response_length is used as the reference.
    * 
-   * for the server response without content-length,
-   * response_length used as the reference.
-   * 
-   * */
-  httpd.response_length = MODEM_FRAME_SIZE; 
+   */
+
+  // Set the maximum length of the response buffer
+  httpd.response_length = MODEM_FRAME_SIZE;
+
+  // Set the timeout for inputting HTTP GET request information in seconds
   httpd.timeout = 80;
+
+  // Set the timeout for receiving HTTP response in seconds
   httpd.resptime = 80;
+
+  // Send the HTTP GET request and wait for the response and the status code
   status = modem->HTTP(socket, &httpd);
 
+  // Check if the status code is positive
   if(status > 0){
-    // do something with the http_response_buffer
+    // Do something with the http_response_buffer
   }
 }
 ```
+
+<br/>
+
+**HTTP GET Response Callback**:
+
+This code snippet shows how to use a callback function to handle the HTTP response data when sending an HTTP GET request to a web server. 
+
+The code performs the following steps: 
+
+- Define the maximum size of the HTTP response buffer and declare an array to store the HTTP response. 
+- Specify the HTTP URL to request and declare variables to store the status, socket and PDP context. 
+- Declare a pointer to the modem driver and a struct to store the HTTP configuration. 
+- Initialize the modem driver with no callback function and power on the modem driver with full power mode. 
+- Set the context ID and type for TCP/IP connection and the APN for the network provider. 
+- Activate the PDP context and get the socket and PDP information. Check if the activation was successful and the PDP context is activated. 
+- Set the HTTP method to GET, the HTTP URL to request, the pointer to the response buffer, the maximum length of the response buffer, and the timeouts for inputting and receiving HTTP data. 
+- Set the callback function to handle the fragmented response data.
+- Send the HTTP GET request and get the status code. Check if the status code is positive and do something with the http_response_buffer.
+
+
+```c
+#include "Driver_Modem.h"
+#include <stdio.h>
+
+
+// define the number of HTTP header fields to be sent
+#define HEADER_NFIELDS	2
+// define the maximum size of data frame for modem communication
+#define MODEM_MAX_FRAME_SIZE 1000
+// define the size of buffer for HTTP header fields
+#define HTTP_HEADER_BUFFER_SIZE 500
+
+
+// declare the modem driver structure from external source
+extern MOD_DRIVER MOD_DRIVER0;
+
+
+// allocate memory for HTTP header buffer
+char HTTP_Header_Buffer[HTTP_HEADER_BUFFER_SIZE];
+// allocate memory for HTTP response buffer (must be twice the size of response length)
+char HTTP_Response_Buffer[MODEM_MAX_FRAME_SIZE * 2U ]; 
+// define the HTTP URL to send the request to
+const char HTTP_URL[]="http://foo.bar";
+
+// initialize an array of HTTP header fields with key-value pairs
+HTTP_HeaderField header_fields[HEADER_NFIELDS] = {
+	{"Cookie", "__cfduid=d187bc66b10ad8d45a48801d6b470c3491595316310"},
+	{"Content-Type", "application/json"},
+};
+
+
+/**
+ * \brief modem main thread
+ */
+void modem_main(){
+	// status variable for error checking
+	int32_t status; 
+	// socket variable for modem activation
+	int32_t socket = -1; 
+	// pointer to modem driver structure
+	MOD_DRIVER *modem = &MOD_DRIVER0; 
+	// structure for TCP context configuration
+	MOD_CONTEXT_CONFIG tcp; 
+	// structure for PDP context information
+	MOD_PDP_CONTEXT pdp; 
+	// structure for HTTP request parameters
+	MOD_HTTP_t httpd ={0}; 
+	// structure for HTTP header fields
+	MOD_Header_t header = {0}; 
+
+
+	// power up the modem serial interface
+	// Modem_Serial_PowerUp(); 
+
+	// initialize the modem driver
+	status = modem->Initialize(NULL); 
+	if (status != MOD_DRIVER_OK){
+		// handle initialization error
+	}
+
+	// set the modem power to full
+	status = modem->PowerControl (MOD_POWER_FULL); 
+	if (status != MOD_DRIVER_OK){
+		// handle power control error
+	}
+
+	// set the TCP context configuration parameters
+	// use the default context ID
+	// use IPv4 protocol type
+	// tcp.authentication set the authentication type (see MOD_PDPContextAuthentication_t structure)
+	// tcp.username set the username (optional)
+	// tcp.password set the password (optional)
+	tcp.contextID = MOD_DEFAULT_CONTEXT; 
+	tcp.context_type = MOD_PDP_CONTEXT_TYPE_IPV4; 
+	tcp.APN = (uint8_t *)"mtnirancell"; // use the specified APN name
+
+	// activate the modem using the default mode and get the PDP context information
+	socket = modem->Activate(MOD_ACTIVATE_DEFAULT, &pdp); 
+	// check if the activation was successful
+	if(socket < 0){ 
+		// handle activation error
+	}	else {
+
+		// get the PDP context information from pdp structure
+		// pdp.type;            protocol type (integer)
+		// pdp.remote_ip4[4];   remote IP address (IPv4)
+		// pdp.remote_ip6[6];   remote IP address (IPv6)
+		
+		// set the HTTP header fields from header_fields array
+		header.fields = header_fields;
+		header.nfield = HEADER_NFIELDS;
+		header.buffer = HTTP_Header_Buffer;
+		
+		// set the HTTP request parameters from httpd structure
+		httpd.header = &header; // pointer to header structure
+		httpd.method = MOD_HTTP_GET; // HTTP method (GET)
+		httpd.url = (uint8_t *)HTTP_URL; // URL to send the request to
+		httpd.response = (uint8_t *)HTTP_Response_Buffer; // buffer to store the response data
+		httpd.response_length = MODEM_MAX_FRAME_SIZE; // maximum size of response data
+		httpd.response_callback = &HTTP_Response_Fetch; // callback function to handle fragmented response data
+		httpd.timeout = 80; // timeout value for HTTP request (in seconds)
+		httpd.resptime = 80; // response time value for HTTP request (in seconds)
+		
+		status = modem->HTTP(socket, &httpd); // send the HTTP request using the socket and get the status
+		
+		if(status > 0){
+			// handle successful HTTP request
+		} else {
+			// handle HTTP request error
+		}
+		
+	}
+}
+
+
+/**
+ * \brief HTTP Response callback that is used to receive fragmented HTTP content.
+ * \param data: pointer to response buffer
+ * \param counter: the number of data chunks received so far
+ * \param pending_size: the remaining size of the data to be received
+ * \param data_size: the size of the current data chunk
+ */
+void HTTP_Response_Fetch (uint8_t *data, uint32_t counter, uint32_t pending_size, uint32_t data_size){
+    static FILE *fp; // file pointer to write data to a file
+    if(counter == 0){ // start of data
+        fp = fopen("foo.bar","w"); // open a file named sample.txt in write mode
+        if(fp == NULL){ // check if the file is opened successfully
+            printf("Error opening file\n");
+            return;
+        }
+    }
+    if(pending_size == 0){ // end of data
+        fclose(fp); // close the file
+    } else{
+        fwrite(data, 1, data_size, fp); // write the current data chunk to the file
+    }
+}
+```
+
 # Table of Contents
 - [Modem Driver](#modem-driver)
-  - [Examples](#examples)
+  - [Usage](#usage)
 - [Table of Contents](#table-of-contents)
   - [Common Driver Functions](#common-driver-functions)
     - [Cortex-M Processor Mode](#cortex-m-processor-mode)
@@ -91,34 +291,34 @@ else if(pdp.state == MOD_PDP_CONTEXT_ACTIVATED){
     - [Stop Sequence](#stop-sequence)
     - [Access Struct:](#access-struct)
   - [Modem Control:](#modem-control)
-	- [Typedef Documentation:](#typedef-documentation)
-	  - [MOD_SignalEvent_t:](#mod_signalevent_t)
-	- [Function Documentation:](#function-documentation)
-	  - [MOD_GetVersion](#mod_getversion)
-	  - [MOD_Initialize](#mod_initialize)
-	  - [MOD_Uninitialize](#mod_uninitialize)
-	  - [MOD_PowerControl](#mod_powercontrol)
-	  - [MOD_SignalEvent](#mod_signalevent)
+        - [Typedef Documentation:](#typedef-documentation)
+          - [MOD\_SignalEvent\_t:](#mod_signalevent_t)
+        - [Function Documentation:](#function-documentation)
+          - [MOD\_GetVersion](#mod_getversion)
+          - [MOD\_Initialize](#mod_initialize)
+          - [MOD\_Uninitialize](#mod_uninitialize)
+          - [MOD\_PowerControl](#mod_powercontrol)
+          - [MOD\_SignalEvent](#mod_signalevent)
   - [Modem Management:](#modem-management)
-       - [Data Structure Documentation:](#data-structure-documentation)
-       - [Function Documentation:](#function-documentation-1)
-         - [MOD_Activate](#mod_activate)
-         - [MOD_Deactivate](#mod_deactivate)
-         - [MOD_Context](#mod_context)
+        - [Data Structure Documentation:](#data-structure-documentation)
+        - [Function Documentation:](#function-documentation-1)
+          - [MOD\_Activate](#mod_activate)
+          - [MOD\_Deactivate](#mod_deactivate)
+          - [MOD\_Context](#mod_context)
   - [HTTP Interface:](#http-interface)
-       - [Typedef Documentation:](#typedef-documentation-1)
-         - [HTTP\_ResponseCallback\_t](#http_responsecallback_t)
-         - [HTTP\_RequestCallback\_t](#http_requestcallback_t)
-       - [Data Structure Documentation:](#data-structure-documentation-1)
-         - [MOD\_HTTP\_t](#mod_http_t)
-         - [MOD\_Header\_t](#mod_header_t)
-         - [HTTP\_HeaderField](#http_headerfield)
-       - [Function Documentation:](#function-documentation-2)
-         - [MOD_HTTP_SetOption](#mod_http_setoption)
-         - [MOD_HTTP_GetOption](#mod_http_getoption)
-         - [MOD_SetURL](#mod_seturl)
-         - [HTTP_ResponseCallback](#http_responsecallback)
-         - [HTTP_RequestCallback](#http_requestcallback)
+        - [Typedef Documentation:](#typedef-documentation-1)
+          - [HTTP\_ResponseCallback\_t](#http_responsecallback_t)
+          - [HTTP\_RequestCallback\_t](#http_requestcallback_t)
+        - [Data Structure Documentation:](#data-structure-documentation-1)
+          - [MOD\_HTTP\_t](#mod_http_t)
+          - [MOD\_Header\_t](#mod_header_t)
+          - [HTTP\_HeaderField](#http_headerfield)
+        - [Function Documentation:](#function-documentation-2)
+          - [MOD\_HTTP\_SetOption](#mod_http_setoption)
+          - [MOD\_HTTP\_GetOption](#mod_http_getoption)
+          - [MOD\_SetURL](#mod_seturl)
+          - [HTTP\_ResponseCallback](#http_responsecallback)
+          - [HTTP\_RequestCallback](#http_requestcallback)
 
 <br/>
 

@@ -4261,6 +4261,8 @@ static int32_t MOD_SetURL (char * url, uint32_t length, uint32_t timeout) {
   return (rval);
 
 }
+
+
 /**
   \brief HTTP GET/POST request handler
   \param[in]     socket activated PDP socket ID 
@@ -4365,7 +4367,7 @@ static int32_t MOD_HTTP (int32_t socket, MOD_HTTP_t * httpd){
           httpd->data_length = strlen((const char *)httpd->data);
 			
       if(httpd->header){
-        HTTP_HaderTypeDef header;
+        HTTP_HeaderTypeDef header;
 
         ex = MOD_HTTP_SetOption(HTTP_OPTION_REQUESTHEADER, (void *)HTTP_SETOPTION_ENABLE);
 

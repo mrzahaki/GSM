@@ -160,7 +160,7 @@ typedef struct {
 
   uint32_t resptime;
 
-} MOD_HTTP_t;;
+} MOD_HTTP_t;
  
 #define MOD_HTTP_GET          0
 #define MOD_HTTP_POST         1

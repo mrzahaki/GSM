@@ -33,14 +33,14 @@
  * 
  * Parameters:
  *   out: a pointer to the output buffer where the header will be written
- *   header: a pointer to an HTTP_HaderTypeDef structure that contains the
+ *   header: a pointer to an HTTP_HeaderTypeDef structure that contains the
  *           information for the header, such as url, method, fields, etc.
  * 
  * Returns:
  *   The number of bytes written to the output buffer.
  * 
  * Example usage:
- *   HTTP_HaderTypeDef header;
+ *   HTTP_HeaderTypeDef header;
  *   header.url = "http://example.com/index.html";
  *   header.method = HTTP_HEADER_METHOD_GET;
  *   header.nfield = 0;
@@ -48,7 +48,7 @@
  *   char buffer[256];
  *   uint32_t n = HTTPHeader(buffer, &header);
  * -------------------------------------------------------------------------- */
-uint32_t HTTPHeader(char *out, HTTP_HaderTypeDef * header){
+uint32_t HTTPHeader(char *out, HTTP_HeaderTypeDef * header){
   uint32_t n = 0, cntr;
   char *host = strstr(header->url, "//") + 2; // extract the host name from the url
   char *path = strchr(host, '/'); // extract the path from the url

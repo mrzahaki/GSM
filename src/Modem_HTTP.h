@@ -36,7 +36,7 @@ typedef struct {
     uint32_t content_length;   ///< The length of the message body in bytes
     unsigned method: 1;        ///< The HTTP method of the request, 0 for GET and 1 for POST
 
-} HTTP_HaderTypeDef;
+} HTTP_HeaderTypeDef;
  
 // Define constants for HTTP methods
 #define HTTP_HEADER_METHOD_GET     0
@@ -45,10 +45,10 @@ typedef struct {
 /**
  * \brief A function to generate an HTTP request or response header string from a structure.
  * \param[out] out A pointer to a buffer to store the generated header string
- * \param[in] header A pointer to an HTTP_HaderTypeDef structure with the header information
+ * \param[in] header A pointer to an HTTP_HeaderTypeDef structure with the header information
  * \return The length of the generated header string in bytes, or 0 if an error occurred
  */
-extern uint32_t HTTPHeader(char *out, HTTP_HaderTypeDef * header);
+extern uint32_t HTTPHeader(char *out, HTTP_HeaderTypeDef * header);
 
 
 #endif //__HTTP_H
