@@ -171,7 +171,7 @@ extern MOD_DRIVER MOD_DRIVER0;
 
 // allocate memory for HTTP header buffer
 char HTTP_Header_Buffer[HTTP_HEADER_BUFFER_SIZE];
-// allocate memory for HTTP response buffer (must be twice the size of response length)
+// It allocates memory for the HTTP response buffer, which must be twice the size of the response length in case there is a response callback
 char HTTP_Response_Buffer[MODEM_MAX_FRAME_SIZE * 2U ]; 
 // define the HTTP URL to send the request to
 const char HTTP_URL[]="http://foo.bar";
