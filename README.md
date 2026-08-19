@@ -4,6 +4,10 @@ Driver API for LTE-FDD, LTE-TDD, and GPRS modules from Quectel (such as EG915, E
 
 This is a C library that provides an interface to communicate with a modem device using AT commands. The library supports various modem operations, such as power control, network registration, TCP/IP connection, and HTTP requests. 
 
+<a href="https://nowpayments.io/donation?api_key=d3ea2e87-3333-4b87-90bc-152d8f22c723" target="_blank" rel="noreferrer noopener">
+   <img src="https://nowpayments.io/images/embeds/donation-button-white.svg" alt="Cryptocurrency & Bitcoin donation button by NOWPayments">
+</a>
+
 The GSM library:
 
 - provides callback functions to handle asynchronous events and data from the modem.
